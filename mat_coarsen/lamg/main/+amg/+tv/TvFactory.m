@@ -32,6 +32,8 @@ classdef (Sealed) TvFactory < handle
             %end
             x = obj.tvInitialGuess(initialGuess).build(level, Kfine);
             r = -level.A*x;
+
+            fprintf('tvInitialGuess x size %s \n',mat2str(size(x)));
             
             % AGG level: if a TV increment was requested, create more
             % random vectors. Then relax each vector nu times.
@@ -40,6 +42,8 @@ classdef (Sealed) TvFactory < handle
             else
                 tvIncrement = K - Kfine;
             end
+
+            fprintf('tvIncrement %d \n',tvIncrement);
             
             %if (~level.hasDisconnectedNodes) &&
             if (tvIncrement > 0)

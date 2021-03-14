@@ -45,9 +45,12 @@ classdef (Hidden, Sealed) CoarseningStrategyAgg < amg.setup.CoarseningStrategy
                 return;
             end
             if (fineLevel.K > 1)
+                fprintf('fineLevel.x size before %s \n',mat2str(size(fineLevel.x)));
                 [tv tv_r] = amg.setup.CoarseningStrategyAgg.TV_FACTORY.generateTvs(...
                     fineLevel, obj.options.tvInitialGuess, fineLevel.K-1, obj.options.tvSweeps, obj.options.lda, obj.options.kpower);
+                fprintf('tv size %s \n',mat2str(size(tv)));
                 fineLevel.x = [fineLevel.x tv];
+                fprintf('fineLevel.x size after %s \n',mat2str(size(fineLevel.x)));
                 fineLevel.r = [fineLevel.r tv_r];
             end
             details.timeRelax = details.timeRelax + toc(tStart);
@@ -117,35 +120,39 @@ classdef (Hidden, Sealed) CoarseningStrategyAgg < amg.setup.CoarseningStrategy
             if (tvNu < initial)
                 error('#TV relaxations < #initial relaxations, case not yet supported');
             end
-            x  = 2*rand(level.g.numNodes,1)-1; % must have 0 mean, like any other TV!
-            r  = -level.A*x;
-            %x = rand(level.g.numNodes,1); % non-0-mean
-            %[x, r]  = level.tvRelax(x , r, initial);
-            %[tv, rtv] = level.tvRelax(x , r, tvNu-initial);
-            %[y, r]  = level.tvRelax(tv, rtv, nu-tvNu); %#ok
+            fprintf('=====================TEST============================\n');
+            fprintf('y0 %s \n',mat2str(obj.options.y0));
+            fprintf('number of initial tv %d \n',level.K);
+            fprintf('=====================TEST============================\n');
             lda = obj.options.lda;
             k = obj.options.kpower;
             n = length(level.A);
+            x  = 2*rand(level.g.numNodes,1)-1; % must have 0 mean, like any other TV!
+            r  = -level.A*x;
+            %x = rand(level.g.numNodes,1); % non-0-mean
+            [x, r]  = level.tvRelax(x , r, initial, lda, k);
+            [tv, rtv] = level.tvRelax(x , r, tvNu-initial, lda, k);
+            [y, r]  = level.tvRelax(tv, rtv, nu-tvNu, lda, k); %#ok
             adj = diag(diag(level.A)) - level.A + lda*speye(n);
             d_inv_sqrt = sum(adj, 2).^-0.5;
             d_inv_sqrt(isinf(d_inv_sqrt)|isnan(d_inv_sqrt)) = 0;
             degree = spdiags(d_inv_sqrt, 0, n, n);
             filter = degree*adj*degree;
             y1 = x;
-            for i=1:k
-                y1 = filter * y1;
-            end
-            y = y1;
-            for i=1:k
-                y = filter * y;
-            end
+            % for i=1:k
+            %     y1 = filter * y1;
+            % end
+            % y = y1;
+            % for i=1:k
+            %     y = filter * y;
+            % end
 
             relaxAcf = (norm(y-mean(y))/norm(y1 - mean(y1)))^(1/(nu-initial));
             %relaxAcf = (norm(y-mean(y))/norm(y1 - mean(y1)))^(1/(k));
             
             % Use asymptotic vector of as a TV
-            %level.x = tv; %y; % So that TV passes the same # sweeps as all other TVs ==> no need to normalize it differently
-            %level.r = rtv; %r;
+            % level.x = tv; %y; % So that TV passes the same # sweeps as all other TVs ==> no need to normalize it differently
+            % level.r = rtv; %r;
             level.x = y1; %y; % So that TV passes the same # sweeps as all other TVs ==> no need to normalize it differently
             level.r = -level.A*y1; %r;
             

@@ -16,6 +16,7 @@ function LamgSetup()
         SavePath = 'save'
         lda = 0.1;                                         % self_loop
         kpower = 2;                                        % power of graph filter
+        y0 = [1];                                          % groundtruth labels
 
         fp = fopen(GraphPath, 'r');
         B = textscan(fp, '%d %d %f', 'headerlines', 3);    % skip first two rows in mtx file
@@ -31,7 +32,7 @@ function LamgSetup()
         n = length(A);	
         fprintf('###### Running LamgSetup ######\n');
         t = cputime;
-	    lamg  = Solvers.newSolver('lamg', 'randomSeed', 1,  'maxDirectSolverSize', floor(n/ReductionRatio), 'lda', lda, 'kpower', kpower);
+	    lamg  = Solvers.newSolver('lamg', 'randomSeed', 1,  'maxDirectSolverSize', floor(n/ReductionRatio), 'lda', lda, 'kpower', kpower, 'y0', y0);
 
         %tStart = tic;
         setup = lamg.setup('laplacian', A);

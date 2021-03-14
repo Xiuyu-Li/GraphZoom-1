@@ -16,6 +16,7 @@ classdef (Sealed) Options < handle %matlab.mixin.Copyable
         minWeightAllowed = -0.1                 % Minimum weight w_{uv} allowed relative to max(max_s w_{us}, max_s w_{sv})
         x0 = []                                 % Initial guess (applicable if non-empty)
         numEigenpairs = 1                       % Number of desired eigenpairs (in an eigenproblem)
+        y0 = []                                 % Groundtruth labels
         
         %-------------------------
         % Relaxation scheme
@@ -173,6 +174,7 @@ classdef (Sealed) Options < handle %matlab.mixin.Copyable
             Options.addField(p, d, 'minWeightAllowed', @isnumeric);
             Options.addField(p, d, 'x0', @(x)(isempty(x) || isnumeric(x) || isa(x, 'function_handle')));
             Options.addField(p, d, 'numEigenpairs', @isPositiveIntegral);
+            Options.addField(p, d, 'y0', @(x)(isempty(x) || isnumeric(x) || isa(x, 'function_handle')));
 
             % Relaxation options
             Options.addField(p, d, 'relaxType', @ischar);
