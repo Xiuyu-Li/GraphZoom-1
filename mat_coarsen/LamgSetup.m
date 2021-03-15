@@ -36,7 +36,8 @@ function LamgSetup(GraphPath, yPath, ReductionRatio, tvNum, Fusion, useLabel, Sa
         t = cputime;
 	    
         if (useLabel~=1)
-            lamg  = Solvers.newSolver('lamg', 'randomSeed', 1,  'maxDirectSolverSize', floor(n/ReductionRatio), 'lda', lda, 'kpower', kpower);
+            lamg  = Solvers.newSolver('lamg', 'randomSeed', 1,  'maxDirectSolverSize', floor(n/ReductionRatio), 'lda', lda, 'kpower', kpower,...
+                'tvNum', tvNum);
         else
             y_size = size(y0);
             tvNum = y_size(2);
