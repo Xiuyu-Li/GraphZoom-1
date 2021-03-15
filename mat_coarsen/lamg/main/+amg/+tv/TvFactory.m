@@ -19,7 +19,7 @@ classdef (Sealed) TvFactory < handle
     
     %======================== METHODS =================================
     methods 
-        function [x, r] = generateTvs(obj, level, initialGuess, K, nu, lda, kpower)
+        function [x, r] = generateTvs(obj, level, initialGuess, K, nu, lda, kpower, y, useLabel)
             % Generate K TVs using the initial guess type INITIALGUESS plus
             % nu relaxation sweeps.
 
@@ -31,7 +31,12 @@ classdef (Sealed) TvFactory < handle
             %    Kfine = size(level.fineLevel.x, 2);
             %end
             x = obj.tvInitialGuess(initialGuess).build(level, Kfine);
-            r = -level.A*x;
+
+            if (~useLabel)
+                r = -level.A*x;
+            else
+                r = y-level.A*x;
+            end
 
             fprintf('tvInitialGuess x size %s \n',mat2str(size(x)));
             

@@ -46,8 +46,11 @@ classdef (Hidden, Sealed) CoarseningStrategyAgg < amg.setup.CoarseningStrategy
             end
             if (fineLevel.K > 1)
                 fprintf('fineLevel.x size before %s \n',mat2str(size(fineLevel.x)));
+                % [tv tv_r] = amg.setup.CoarseningStrategyAgg.TV_FACTORY.generateTvs(...
+                    % fineLevel, obj.options.tvInitialGuess, fineLevel.K-1, obj.options.tvSweeps, obj.options.lda, obj.options.kpower);
                 [tv tv_r] = amg.setup.CoarseningStrategyAgg.TV_FACTORY.generateTvs(...
-                    fineLevel, obj.options.tvInitialGuess, fineLevel.K-1, obj.options.tvSweeps, obj.options.lda, obj.options.kpower);
+                    fineLevel, obj.options.tvInitialGuess, fineLevel.K-1, obj.options.tvSweeps, ...
+                    obj.options.lda, obj.options.kpower, obj.options.y0(:, 2:end), obj.options.useLabel);
                 fprintf('tv size %s \n',mat2str(size(tv)));
                 fineLevel.x = [fineLevel.x tv];
                 fprintf('fineLevel.x size after %s \n',mat2str(size(fineLevel.x)));
@@ -73,6 +76,8 @@ classdef (Hidden, Sealed) CoarseningStrategyAgg < amg.setup.CoarseningStrategy
             % Initialize the next-coarser level - compute interpolation,
             % Galerkin coarsening and energy correction
             tStart = tic;
+            fprintf('tvMax %d \n',obj.options.tvMax);
+            fprintf('fineLevel.K + tvIncrement %d \n',fineLevel.K + obj.options.tvIncrement);
             coarseLevel = amg.setup.CoarseningStrategy.LEVEL_FACTORY.newInstance(...
                 amg.level.LevelType.AGG, ...
                 target.index, ...
@@ -121,14 +126,25 @@ classdef (Hidden, Sealed) CoarseningStrategyAgg < amg.setup.CoarseningStrategy
                 error('#TV relaxations < #initial relaxations, case not yet supported');
             end
             fprintf('=====================TEST============================\n');
-            fprintf('y0 %s \n',mat2str(obj.options.y0));
+            % fprintf('y true %s \n',mat2str(obj.options.y0));
             fprintf('number of initial tv %d \n',level.K);
             fprintf('=====================TEST============================\n');
             lda = obj.options.lda;
             k = obj.options.kpower;
             n = length(level.A);
             x  = 2*rand(level.g.numNodes,1)-1; % must have 0 mean, like any other TV!
-            r  = -level.A*x;
+
+            y_size = size(obj.options.y0)
+            if (level.g.numNodes ~= y_size(1))
+                obj.options.useLabel = false
+            end
+
+            if (~obj.options.useLabel)
+                r  = -level.A*x;
+            else
+                r = obj.options.y0(:, 1) - level.A*x;
+            end
+
             %x = rand(level.g.numNodes,1); % non-0-mean
             [x, r]  = level.tvRelax(x , r, initial, lda, k);
             [tv, rtv] = level.tvRelax(x , r, tvNu-initial, lda, k);
@@ -154,7 +170,13 @@ classdef (Hidden, Sealed) CoarseningStrategyAgg < amg.setup.CoarseningStrategy
             % level.x = tv; %y; % So that TV passes the same # sweeps as all other TVs ==> no need to normalize it differently
             % level.r = rtv; %r;
             level.x = y1; %y; % So that TV passes the same # sweeps as all other TVs ==> no need to normalize it differently
-            level.r = -level.A*y1; %r;
+
+            if (~obj.options.useLabel)
+                level.r = -level.A*y1; %r;
+            else
+                r = obj.options.y0(:, 1)-level.A*y1;
+            end
+
             
             if (obj.myLogger.debugEnabled)
                 obj.myLogger.debug('Relaxation ACF = %.3f, acceptable ACF = %.3f\n', ...

@@ -16,7 +16,10 @@ function LamgSetup()
         SavePath = 'save'
         lda = 0.1;                                         % self_loop
         kpower = 2;                                        % power of graph filter
-        y0 = [1];                                          % groundtruth labels
+        
+        y_mat = load('cora_y.mat');
+        y0 = double(y_mat.data);                                   % groundtruth labels
+        useLabel = true;                                   % whether use labels for solving tvs
 
         fp = fopen(GraphPath, 'r');
         B = textscan(fp, '%d %d %f', 'headerlines', 3);    % skip first two rows in mtx file
@@ -32,7 +35,15 @@ function LamgSetup()
         n = length(A);	
         fprintf('###### Running LamgSetup ######\n');
         t = cputime;
-	    lamg  = Solvers.newSolver('lamg', 'randomSeed', 1,  'maxDirectSolverSize', floor(n/ReductionRatio), 'lda', lda, 'kpower', kpower, 'y0', y0);
+	    
+        if (~useLabel)
+            lamg  = Solvers.newSolver('lamg', 'randomSeed', 1,  'maxDirectSolverSize', floor(n/ReductionRatio), 'lda', lda, 'kpower', kpower);
+        else
+            y_size = size(y0);
+            tvNum = y_size(2);
+            % tvMax = y_size(2)
+            lamg  = Solvers.newSolver('lamg', 'randomSeed', 1,  'maxDirectSolverSize', floor(n/ReductionRatio), 'lda', lda, 'kpower', kpower,...
+                'y0', y0, 'tvNum', tvNum, 'useLabel', useLabel);
 
         %tStart = tic;
         setup = lamg.setup('laplacian', A);

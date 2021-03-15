@@ -45,6 +45,7 @@ classdef (Sealed) Options < handle %matlab.mixin.Copyable
         interpType = 'caliber1'                 % Interpolation operator type
         restrictType = 'transpose'              % Restriction operator type
         nuDesign = 'split_evenly_post'          % Strategy of splitting the relaxation sweep number nu at each level to nuPre and nuPost
+        useLabel = false                        % If true, uses groundtruth labels instead of 0 for solving the Gauss-Seidel equation
         %disconnectedNodeTol = 1e-15             % A node is considered disconnected (0-degree) iff A(i,i) < this tolerance
 
         lda = 0.1                               % adding self-loop
@@ -195,6 +196,7 @@ classdef (Sealed) Options < handle %matlab.mixin.Copyable
             Options.addField(p, d, 'interpType', @ischar);
             Options.addField(p, d, 'restrictType', @ischar);
             Options.addField(p, d, 'nuDesign', @(x)(any(strcmp(x,{'split_evenly', 'split_evenly_post', 'pre', 'post'}))));
+            Options.addField(p, d, 'useLabel', @islogical);
             %Options.addField(p, d, 'disconnectedNodeTol', @isPositive);
             
             % Setup - elimination options
