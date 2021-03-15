@@ -189,6 +189,7 @@ classdef (Sealed) Options < handle %matlab.mixin.Copyable
             Options.addField(p, d, 'setupSave', @islogical);
             Options.addField(p, d, 'cycleIndex', @isPositive);
             Options.addField(p, d, 'tvNum', @isPositive);
+            Options.addField(p, d, 'tvMax', @isPositive);
             Options.addField(p, d, 'tvIncrement', @isnumeric);
             Options.addField(p, d, 'tvSweeps', @isnumeric);
             Options.addField(p, d, 'tvNumLocalSweeps', @isnumeric);
