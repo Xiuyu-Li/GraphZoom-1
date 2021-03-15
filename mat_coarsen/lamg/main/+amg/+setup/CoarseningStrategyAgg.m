@@ -146,22 +146,22 @@ classdef (Hidden, Sealed) CoarseningStrategyAgg < amg.setup.CoarseningStrategy
             end
 
             %x = rand(level.g.numNodes,1); % non-0-mean
-            [x, r]  = level.tvRelax(x , r, initial, lda, k);
-            [tv, rtv] = level.tvRelax(x , r, tvNu-initial, lda, k);
-            [y, r]  = level.tvRelax(tv, rtv, nu-tvNu, lda, k); %#ok
+            % [x, r]  = level.tvRelax(x , r, initial, lda, k);
+            % [tv, rtv] = level.tvRelax(x , r, tvNu-initial, lda, k);
+            % [y, r]  = level.tvRelax(tv, rtv, nu-tvNu, lda, k); %#ok
             adj = diag(diag(level.A)) - level.A + lda*speye(n);
             d_inv_sqrt = sum(adj, 2).^-0.5;
             d_inv_sqrt(isinf(d_inv_sqrt)|isnan(d_inv_sqrt)) = 0;
             degree = spdiags(d_inv_sqrt, 0, n, n);
             filter = degree*adj*degree;
             y1 = x;
-            % for i=1:k
-            %     y1 = filter * y1;
-            % end
-            % y = y1;
-            % for i=1:k
-            %     y = filter * y;
-            % end
+            for i=1:k
+                y1 = filter * y1;
+            end
+            y = y1;
+            for i=1:k
+                y = filter * y;
+            end
 
             relaxAcf = (norm(y-mean(y))/norm(y1 - mean(y1)))^(1/(nu-initial));
             %relaxAcf = (norm(y-mean(y))/norm(y1 - mean(y1)))^(1/(k));

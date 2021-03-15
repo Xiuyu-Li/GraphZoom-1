@@ -48,7 +48,7 @@ classdef (Sealed) TvFactory < handle
                 tvIncrement = K - Kfine;
             end
 
-            fprintf('tvIncrement %d \n',tvIncrement);
+            % fprintf('tvIncrement %d \n',tvIncrement);
             
             %if (~level.hasDisconnectedNodes) &&
             if (tvIncrement > 0)
