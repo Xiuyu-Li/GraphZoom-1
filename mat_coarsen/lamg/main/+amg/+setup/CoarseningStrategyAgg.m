@@ -76,6 +76,7 @@ classdef (Hidden, Sealed) CoarseningStrategyAgg < amg.setup.CoarseningStrategy
             % Initialize the next-coarser level - compute interpolation,
             % Galerkin coarsening and energy correction
             tStart = tic;
+            obj.options.tvMax = 10;
             fprintf('tvMax %d \n',obj.options.tvMax);
             fprintf('fineLevel.K + tvIncrement %d \n',fineLevel.K + obj.options.tvIncrement);
             coarseLevel = amg.setup.CoarseningStrategy.LEVEL_FACTORY.newInstance(...
@@ -137,7 +138,6 @@ classdef (Hidden, Sealed) CoarseningStrategyAgg < amg.setup.CoarseningStrategy
             y_size = size(obj.options.y0)
             if (level.g.numNodes ~= y_size(1))
                 obj.options.useLabel = false;
-                obj.options.tvMax = 10;
             end
 
             if (~obj.options.useLabel)
