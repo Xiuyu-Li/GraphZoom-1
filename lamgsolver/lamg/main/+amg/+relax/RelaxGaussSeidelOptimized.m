@@ -31,6 +31,7 @@ classdef (Hidden) RelaxGaussSeidelOptimized < amg.relax.Relax
             % can be a matrix whose columns are multiple initial guesses.
             % Assuming X is an error vector, so the corresponding residual
             % is the action A*X.
+            fprintf('================GS Relax===================\n');
             [x, r] = gsrelax(obj.A, x, r, uint32(nu));
         end
         

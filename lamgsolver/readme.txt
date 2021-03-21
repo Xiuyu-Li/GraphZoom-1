@@ -1,42 +1,102 @@
-How to Compile:
+LamgSetup Executable
 
-make('compile') after you open matlab;
+1. Prerequisites for Deployment 
 
-Two main functions are included in this package: emdreduction.m and eigmap.m
+Verify that version 9.4 (R2018a) of the MATLAB Runtime is installed.   
+If not, you can run the MATLAB Runtime installer.
+To find its location, enter
+  
+    >>mcrinstaller
+      
+at the MATLAB prompt.
 
---------------------------------------------------------------------------------------------
-1. graph reduction function:
--------------------------------------------------------------------------------------------
+Alternatively, download and install the Linux version of the MATLAB Runtime for R2018a 
+from the following link on the MathWorks website:
 
-[Gs, matrix, setup] = emdreduction(A, ratio)
+    http://www.mathworks.com/products/compiler/mcr/index.html
+   
+For more information about the MATLAB Runtime and the MATLAB Runtime installer, see 
+Package and Distribute in the MATLAB Compiler documentation  
+in the MathWorks Documentation Center.
 
-i.e: {Gs, matrix, setup} = graphreduction(A, 10) % 10X reduction on node
- 
-INPUT:
-A : Laplacian matrix of input graph (n-by-n matrix);
-ratio: node reduction ratio defined by user;
+2. Files to Deploy and Package
 
-OUTPUT:
-Gs: Laplacian matrix of reduced graph (m-by-m matrix);
-matrix:cell data structure including the laplacian matrix of graph at each level and the mapping operators.  Mapping operator is a m-by-n matrix with each row representing the node idx in reduction graph, and the value of each row equal to 1 means that the node with index to be colunm index will be aggregated to that node;
-setup: reduction information for futher usage.
+Files to Package for Standalone 
+================================
+-LamgSetup 
+-run_LamgSetup.sh (shell script for temporarily setting environment variables and 
+                   executing the application)
+   -to run the shell script, type
+   
+       ./run_LamgSetup.sh <mcr_directory> <argument_list>
+       
+    at Linux or Mac command prompt. <mcr_directory> is the directory 
+    where version 9.4 of the MATLAB Runtime is installed or the directory where 
+    MATLAB is installed on the machine. <argument_list> is all the 
+    arguments you want to pass to your application. For example, 
+
+    If you have version 9.4 of the MATLAB Runtime installed in 
+    /mathworks/home/application/v94, run the shell script as:
+    
+       ./run_LamgSetup.sh /mathworks/home/application/v94
+       
+    If you have MATLAB installed in /mathworks/devel/application/matlab, 
+    run the shell script as:
+    
+       ./run_LamgSetup.sh /mathworks/devel/application/matlab
+-MCRInstaller.zip
+    Note: if end users are unable to download the MATLAB Runtime using the
+    instructions in the previous section, include it when building your 
+    component by clicking the "Runtime included in package" link in the
+    Deployment Tool.
+-This readme file 
 
 
 
--------------------------------------------------------------------------------------------
-2. vector mapping function:
--------------------------------------------------------------------------------------------
+3. Definitions
 
-V = eigmap(Vs, setup);
+For information on deployment terminology, go to
+http://www.mathworks.com/help and select MATLAB Compiler >
+Getting Started > About Application Deployment >
+Deployment Product Terms in the MathWorks Documentation
+Center.
 
-INPUT:
-Vs : vectors of reduced graph (m-by-k, where k is the number of vectors);
-setup: node reduction information;
+4. Appendix 
 
-OUTPUT:
-V: Mapped vectors (n-by-k matrix);
+A. Linux systems:
+In the following directions, replace MR/v94 by the directory on the target machine where 
+   MATLAB is installed, or MR by the directory where the MATLAB Runtime is installed.
 
-REMINDER:
-Since some information of graph reduction is needed for vector mapping process, you need to run the emdreduction.m function first, and then you can use setup variable for vectors mapping.
-You can refer to emd_example.m for an example of using these two functions.
+(1) Set the environment variable XAPPLRESDIR to this value:
+
+MR/v94/X11/app-defaults
+
+
+(2) If the environment variable LD_LIBRARY_PATH is undefined, set it to the following:
+
+MR/v94/runtime/glnxa64:MR/v94/bin/glnxa64:MR/v94/sys/os/glnxa64:MR/v94/sys/opengl/lib/glnxa64
+
+If it is defined, set it to the following:
+
+${LD_LIBRARY_PATH}:MR/v94/runtime/glnxa64:MR/v94/bin/glnxa64:MR/v94/sys/os/glnxa64:MR/v94/sys/opengl/lib/glnxa64
+
+    For more detailed information about setting the MATLAB Runtime paths, see Package and 
+   Distribute in the MATLAB Compiler documentation in the MathWorks Documentation Center.
+
+
+     
+        NOTE: To make these changes persistent after logout on Linux 
+              or Mac machines, modify the .cshrc file to include this  
+              setenv command.
+        NOTE: The environment variable syntax utilizes forward 
+              slashes (/), delimited by colons (:).  
+        NOTE: When deploying standalone applications, you can
+              run the shell script file run_LamgSetup.sh 
+              instead of setting environment variables. See 
+              section 2 "Files to Deploy and Package".    
+
+
+
+
+
 

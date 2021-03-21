@@ -46,8 +46,11 @@ classdef (Hidden, Sealed) CoarseningStrategyAgg < amg.setup.CoarseningStrategy
             end
             if (fineLevel.K > 1)
                 [tv tv_r] = amg.setup.CoarseningStrategyAgg.TV_FACTORY.generateTvs(...
-                    fineLevel, obj.options.tvInitialGuess, fineLevel.K-1, obj.options.tvSweeps);
+                    fineLevel, obj.options.tvInitialGuess, fineLevel.K-1, obj.options.tvSweeps, ...
+                    obj.options.y0(:, 2:end), obj.options.useLabel);
+                fprintf('tv size %s \n',mat2str(size(tv)));
                 fineLevel.x = [fineLevel.x tv];
+                fprintf('fineLevel.x size after %s \n',mat2str(size(fineLevel.x)));
                 fineLevel.r = [fineLevel.r tv_r];
             end
             details.timeRelax = details.timeRelax + toc(tStart);
@@ -70,6 +73,10 @@ classdef (Hidden, Sealed) CoarseningStrategyAgg < amg.setup.CoarseningStrategy
             % Initialize the next-coarser level - compute interpolation,
             % Galerkin coarsening and energy correction
             tStart = tic;
+            % Change tvMax to 10 at the next level after using labels
+            obj.options.tvMax = 10;
+            fprintf('tvMax %d \n',obj.options.tvMax);
+            fprintf('fineLevel.K + tvIncrement %d \n',fineLevel.K + obj.options.tvIncrement);
             coarseLevel = amg.setup.CoarseningStrategy.LEVEL_FACTORY.newInstance(...
                 amg.level.LevelType.AGG, ...
                 target.index, ...
@@ -117,12 +124,24 @@ classdef (Hidden, Sealed) CoarseningStrategyAgg < amg.setup.CoarseningStrategy
             if (tvNu < initial)
                 error('#TV relaxations < #initial relaxations, case not yet supported');
             end
+            fprintf('number of initial tv %d \n',level.K);
             x  = 2*rand(level.g.numNodes,1)-1; % must have 0 mean, like any other TV!
-            r  = -level.A*x;
+
+            y_size = size(obj.options.y0)
+            if (level.g.numNodes ~= y_size(1))
+                obj.options.useLabel = false;
+            end
+
+            if (~obj.options.useLabel)
+                r  = -level.A*x;
+            else
+                r = obj.options.y0(:, 1) - level.A*x;
+            end
+
             %x = rand(level.g.numNodes,1); % non-0-mean
-            [x, r]  = level.tvRelax(x , r, initial);
-            [tv, rtv] = level.tvRelax(x , r, tvNu-initial);
-            [y, r]  = level.tvRelax(tv, rtv, nu-tvNu); %#ok
+            [x, r]  = level.tvRelax(x , r, initial, obj.options.y0(:, 1), obj.options.useLabel);
+            [tv, rtv] = level.tvRelax(x , r, tvNu-initial, obj.options.y0(:, 1), obj.options.useLabel);
+            [y, r]  = level.tvRelax(tv, rtv, nu-tvNu, obj.options.y0(:, 1), obj.options.useLabel); %#ok
             relaxAcf = (norm(y-mean(y))/norm(x - mean(x)))^(1/(nu-initial));
             
             % Use asymptotic vector of as a TV

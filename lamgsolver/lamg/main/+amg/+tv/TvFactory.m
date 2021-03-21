@@ -19,7 +19,7 @@ classdef (Sealed) TvFactory < handle
     
     %======================== METHODS =================================
     methods 
-        function [x, r] = generateTvs(obj, level, initialGuess, K, nu)
+        function [x, r] = generateTvs(obj, level, initialGuess, K, nu, y, useLabel)
             % Generate K TVs using the initial guess type INITIALGUESS plus
             % nu relaxation sweeps.
 
@@ -31,7 +31,12 @@ classdef (Sealed) TvFactory < handle
             %    Kfine = size(level.fineLevel.x, 2);
             %end
             x = obj.tvInitialGuess(initialGuess).build(level, Kfine);
-            r = -level.A*x;
+            
+            if (~useLabel)
+                r = -level.A*x;
+            else
+                r = y-level.A*x;
+            end
             
             % AGG level: if a TV increment was requested, create more
             % random vectors. Then relax each vector nu times.
@@ -52,7 +57,7 @@ classdef (Sealed) TvFactory < handle
                         tvIncrement, size(x,2));
                 end
             end
-            [x, r] = level.tvRelax(x, r, nu);
+            [x, r] = level.tvRelax(x, r, nu, y, useLabel);
         end
         %x = x-repmat(mean(x,1),size(x,1),1);
     end

@@ -16,6 +16,7 @@ classdef (Sealed) Options < handle %matlab.mixin.Copyable
         minWeightAllowed = -0.1                 % Minimum weight w_{uv} allowed relative to max(max_s w_{us}, max_s w_{sv})
         x0 = []                                 % Initial guess (applicable if non-empty)
         numEigenpairs = 1                       % Number of desired eigenpairs (in an eigenproblem)
+        y0 = [1]                                 % Groundtruth labels
         
         %-------------------------
         % Relaxation scheme
@@ -43,7 +44,11 @@ classdef (Sealed) Options < handle %matlab.mixin.Copyable
         interpType = 'caliber1'                 % Interpolation operator type
         restrictType = 'transpose'              % Restriction operator type
         nuDesign = 'split_evenly_post'          % Strategy of splitting the relaxation sweep number nu at each level to nuPre and nuPost
+        useLabel = false                        % If true, uses groundtruth labels instead of 0 for solving the Gauss-Seidel equation
         %disconnectedNodeTol = 1e-15             % A node is considered disconnected (0-degree) iff A(i,i) < this tolerance
+
+        lda = 0.1                               % adding self-loop
+        kpower = 2                              % power of graph filter
 
         %-------------------------
         % Setup - elimination
@@ -169,6 +174,7 @@ classdef (Sealed) Options < handle %matlab.mixin.Copyable
             Options.addField(p, d, 'minWeightAllowed', @isnumeric);
             Options.addField(p, d, 'x0', @(x)(isempty(x) || isnumeric(x) || isa(x, 'function_handle')));
             Options.addField(p, d, 'numEigenpairs', @isPositiveIntegral);
+            Options.addField(p, d, 'y0', @(x)(isempty(x) || isnumeric(x) || isa(x, 'function_handle')));
 
             % Relaxation options
             Options.addField(p, d, 'relaxType', @ischar);
@@ -182,6 +188,7 @@ classdef (Sealed) Options < handle %matlab.mixin.Copyable
             Options.addField(p, d, 'setupSave', @islogical);
             Options.addField(p, d, 'cycleIndex', @isPositive);
             Options.addField(p, d, 'tvNum', @isPositive);
+            Options.addField(p, d, 'tvMax', @isPositive);
             Options.addField(p, d, 'tvIncrement', @isnumeric);
             Options.addField(p, d, 'tvSweeps', @isnumeric);
             Options.addField(p, d, 'tvNumLocalSweeps', @isnumeric);
@@ -189,6 +196,7 @@ classdef (Sealed) Options < handle %matlab.mixin.Copyable
             Options.addField(p, d, 'interpType', @ischar);
             Options.addField(p, d, 'restrictType', @ischar);
             Options.addField(p, d, 'nuDesign', @(x)(any(strcmp(x,{'split_evenly', 'split_evenly_post', 'pre', 'post'}))));
+            Options.addField(p, d, 'useLabel', @islogical);
             %Options.addField(p, d, 'disconnectedNodeTol', @isPositive);
             
             % Setup - elimination options
@@ -231,6 +239,10 @@ classdef (Sealed) Options < handle %matlab.mixin.Copyable
             Options.addField(p, d, 'nuMax', @isPositiveIntegral);
             Options.addField(p, d, 'addHcrVectors', @islogical);
             Options.addField(p, d, 'coarseningWorkGuard', @isnumeric);
+
+            % graph filter parameter
+            Options.addField(p, d, 'lda', @isPositive);
+            Options.addField(p, d, 'kpower', @isPositiveIntegral);
             
             % Energy Correction
             Options.addField(p, d, 'energyCorrectionType', @ischar);

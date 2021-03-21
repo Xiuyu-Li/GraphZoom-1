@@ -134,7 +134,7 @@ classdef Level < handle
             [x, r] = obj.relaxer.runWithRhs(x, r, b, nu);
         end
         
-        function [x, r] = tvRelax(obj, x, r, nu)
+        function [x, r] = tvRelax(obj, x, r, nu, y, useLabel)
             % Perform NU TV-relaxation sweeps (the homogeneous system) on X
             % and return the result.
             [x, r] = obj.relaxer.runHomogeneous(x, r, nu);
