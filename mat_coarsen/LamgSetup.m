@@ -10,10 +10,18 @@
 
 function LamgSetup(GraphPath, yPath, ReductionRatio, tvNum, Fusion, useLabel, SavePath)
         fprintf('Loading Graph to be Reduced......\n');
-        ReductionRatio = str2num(ReductionRatio)
+        ReductionRatio = str2num(ReductionRatio);
         lda = 0.1;                                         % self_loop
         kpower = 2;                                        % power of graph filter
         tvNum = str2num(tvNum);
+        
+        % tvNum = 4;
+        % ReductionRatio = 2;
+        % GraphPath = 'cora.mtx';
+        % yPath = 'cora_y.mat';
+        % Fusion = 'n';
+        % useLabel = 0;
+        % SavePath = 'save';
         
         y_mat = load(yPath);
         y0 = double(y_mat.data);                           % groundtruth labels

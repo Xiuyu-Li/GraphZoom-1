@@ -61,7 +61,7 @@ classdef (Sealed) TvFactory < handle
                         tvIncrement, size(x,2));
                 end
             end
-            [x, r] = level.tvRelax(x, r, nu, lda, kpower);
+            [x, r] = level.tvRelax(x, r, nu, lda, kpower, y, useLabel);
         end
         %x = x-repmat(mean(x,1),size(x,1),1);
     end

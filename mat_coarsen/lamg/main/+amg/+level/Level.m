@@ -134,7 +134,7 @@ classdef Level < handle
             [x, r] = obj.relaxer.runWithRhs(x, r, b, nu);
         end
         
-        function [x, r] = tvRelax(obj, x, r, nu, lda, k)
+        function [x, r] = tvRelax(obj, x, r, nu, lda, k, y, useLabel)
             % Perform NU TV-relaxation sweeps (the homogeneous system) on X
             % and return the result.
             %%%[x, r] = obj.relaxer.runHomogeneous(x, r, nu);
@@ -150,7 +150,12 @@ classdef Level < handle
             for i=1:k
                 x = filter * x;
             end
-            r = - obj.A*x;
+            
+            if (~useLabel)
+                r = - obj.A*x;
+            else
+                r = y - obj.A*x;
+            end
         end
         
         function setAboveEliminationLevel(obj, relaxFactory, f, c, stage)
